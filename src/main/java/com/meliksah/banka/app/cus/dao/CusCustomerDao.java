@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface CusCustomerDao extends JpaRepository<CusCustomer, Long> {
 
     CusCustomer findByIdentityNo(Long identityNo);
+
+    boolean existsCusCustomerByIdentityNo(Long identityNo);
 }

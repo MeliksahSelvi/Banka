@@ -15,4 +15,8 @@ public class CusCustomerEntityService extends BaseEntityService<CusCustomer, Cus
     public CusCustomer findByIdentityNo(Long identityNo) {
         return getDao().findByIdentityNo(identityNo);
     }
+
+    public boolean existsCusCustomerByIdentityNo(Long identityNo){
+        return getDao().existsCusCustomerByIdentityNo(identityNo);
+    }
 }
