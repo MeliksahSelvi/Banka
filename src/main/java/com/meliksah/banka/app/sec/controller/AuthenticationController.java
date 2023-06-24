@@ -2,6 +2,7 @@ package com.meliksah.banka.app.sec.controller;
 
 import com.meliksah.banka.app.cus.dto.CusCustomerDto;
 import com.meliksah.banka.app.cus.dto.CusCustomerSaveRequestDto;
+import com.meliksah.banka.app.gen.dto.JwtToken;
 import com.meliksah.banka.app.gen.dto.RestResponse;
 import com.meliksah.banka.app.sec.dto.SecLoginRequestDto;
 import com.meliksah.banka.app.sec.service.AuthenticationService;
@@ -30,7 +31,7 @@ public class AuthenticationController {
     @Operation(tags = "Authentication Controller")
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody SecLoginRequestDto secLoginRequestDto) {
-        String token = authenticationService.login(secLoginRequestDto);
-        return ResponseEntity.ok(RestResponse.of(token));
+        JwtToken jwtToken = authenticationService.login(secLoginRequestDto);
+        return ResponseEntity.ok(RestResponse.of(jwtToken));
     }
 }

@@ -5,9 +5,10 @@ import com.meliksah.banka.app.cus.dto.CusCustomerSaveRequestDto;
 import com.meliksah.banka.app.cus.enums.CusErrorMessage;
 import com.meliksah.banka.app.cus.service.CusCustomerService;
 import com.meliksah.banka.app.cus.service.entityservice.CusCustomerEntityService;
+import com.meliksah.banka.app.gen.dto.JwtToken;
 import com.meliksah.banka.app.gen.exception.exceptions.ItemNotFoundException;
+import com.meliksah.banka.app.gen.util.cache.HazelCastCacheUtil;
 import com.meliksah.banka.app.sec.dto.SecLoginRequestDto;
-import com.meliksah.banka.app.sec.enums.EnumJwtConstant;
 import com.meliksah.banka.app.sec.security.JwtTokenGenerator;
 import com.meliksah.banka.app.sec.security.JwtUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -25,23 +26,29 @@ public class AuthenticationService {
     private final CusCustomerEntityService cusCustomerEntityService;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenGenerator jwtTokenGenerator;
+    private final HazelCastCacheUtil hazelCastCacheUtil;
 
     public CusCustomerDto register(CusCustomerSaveRequestDto cusCustomerSaveRequestDto) {
         CusCustomerDto cusCustomerDto = cusCustomerService.save(cusCustomerSaveRequestDto);
         return cusCustomerDto;
     }
 
-    public String login(SecLoginRequestDto secLoginRequestDto) {
+    public JwtToken login(SecLoginRequestDto secLoginRequestDto) {
         validateCusCustomer(secLoginRequestDto);
+
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(secLoginRequestDto.getIdentityNo().toString(), secLoginRequestDto.getPassword());
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String token = jwtTokenGenerator.genereteJwtToken(authentication);
+        JwtToken jwtToken = jwtTokenGenerator.genereteJwtToken(authentication);
 
-        String bearer = EnumJwtConstant.BEARER.toString();
+        writeTokenToCache(jwtToken);
 
-        return bearer + token;
+        return jwtToken;
+    }
+
+    private void writeTokenToCache(JwtToken jwtToken) {
+        hazelCastCacheUtil.writeTokenMap(jwtToken);
     }
 
     private void validateCusCustomer(SecLoginRequestDto secLoginRequestDto) {

@@ -1,16 +1,22 @@
 package com.meliksah.banka.app.sec.security;
 
+import com.meliksah.banka.app.gen.dto.JwtToken;
+import com.meliksah.banka.app.gen.util.cache.HazelCastCacheUtil;
+import com.meliksah.banka.app.sec.enums.EnumJwtConstant;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Date;
 
 @Component
+@RequiredArgsConstructor
 public class JwtTokenGenerator {
 
     @Value("${banka.jwt.security.app.key}")
@@ -19,7 +25,9 @@ public class JwtTokenGenerator {
     @Value("${banka.jwt.security.expire.time}")
     private Long EXPIRE_TIME;
 
-    public String genereteJwtToken(Authentication authentication) {
+    private final HazelCastCacheUtil hazelCastCacheUtil;
+
+    public JwtToken genereteJwtToken(Authentication authentication) {
         JwtUserDetails jwtUserDetails = (JwtUserDetails) authentication.getPrincipal();
         Date expireDate = new Date(new Date().getTime() + EXPIRE_TIME);
 
@@ -30,7 +38,26 @@ public class JwtTokenGenerator {
                 .signWith(SignatureAlgorithm.HS512, APP_KEY)
                 .compact();
 
-        return token;
+        String fullToken = generateFullToken(token);
+
+        JwtToken jwtToken = createJwtToken(fullToken, jwtUserDetails.getId());
+
+        return jwtToken;
+    }
+
+    private String generateFullToken(String token) {
+        String bearer = EnumJwtConstant.BEARER.toString();
+        String fullToken = bearer + token;
+        return fullToken;
+    }
+
+    private JwtToken createJwtToken(String fullToken, Long userId) {
+        JwtToken jwtToken = new JwtToken();
+        jwtToken.setToken(fullToken);
+        jwtToken.setTokenIssuedTime(EXPIRE_TIME);
+        jwtToken.setUserId(userId);
+
+        return jwtToken;
     }
 
     public Long findUserIdByToken(String token) {
@@ -56,8 +83,7 @@ public class JwtTokenGenerator {
 
         boolean isValid;
         try {
-            Jws<Claims> claimsJws = parseToken(token);
-            isValid = !isTokenExpired(claimsJws);
+            isValid = !isTokenExpired(token);
         } catch (Exception e) {
             isValid = false;
         }
@@ -65,10 +91,26 @@ public class JwtTokenGenerator {
         return isValid;
     }
 
-    private boolean isTokenExpired(Jws<Claims> claimsJws) {
-        Date expirationDate = claimsJws.getBody().getExpiration();
+    private boolean isTokenExpired(String token) {
 
-        boolean isExpired = expirationDate.before(new Date());
-        return isExpired;
+        JwtToken jwtToken = hazelCastCacheUtil.readTokenMap(token);
+
+        Long userIdByToken = findUserIdByToken(token);
+
+        if (jwtToken == null) {
+            return true;
+        }
+
+        long expireMs = EXPIRE_TIME - (Instant.now().getEpochSecond() - jwtToken.getTokenIssuedTime());
+
+        if (expireMs > 0 && userIdByToken.equals(jwtToken.getUserId())) {
+
+            jwtToken.setTokenIssuedTime(Instant.now().getEpochSecond());
+            hazelCastCacheUtil.writeTokenMap(jwtToken);
+            return false;
+        } else {
+            hazelCastCacheUtil.deleteFromTokenMap(token);
+            return true;
+        }
     }
 }
