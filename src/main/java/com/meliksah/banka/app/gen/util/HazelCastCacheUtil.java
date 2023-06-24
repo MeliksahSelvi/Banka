@@ -1,4 +1,4 @@
-package com.meliksah.banka.app.gen.util.cache;
+package com.meliksah.banka.app.gen.util;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;

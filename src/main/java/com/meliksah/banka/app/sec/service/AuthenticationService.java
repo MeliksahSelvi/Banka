@@ -7,7 +7,7 @@ import com.meliksah.banka.app.cus.service.CusCustomerService;
 import com.meliksah.banka.app.cus.service.entityservice.CusCustomerEntityService;
 import com.meliksah.banka.app.gen.dto.JwtToken;
 import com.meliksah.banka.app.gen.exception.exceptions.ItemNotFoundException;
-import com.meliksah.banka.app.gen.util.cache.HazelCastCacheUtil;
+import com.meliksah.banka.app.gen.util.HazelCastCacheUtil;
 import com.meliksah.banka.app.sec.dto.SecLoginRequestDto;
 import com.meliksah.banka.app.sec.security.JwtTokenGenerator;
 import com.meliksah.banka.app.sec.security.JwtUserDetails;

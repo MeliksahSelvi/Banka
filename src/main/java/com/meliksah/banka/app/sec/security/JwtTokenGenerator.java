@@ -1,7 +1,7 @@
 package com.meliksah.banka.app.sec.security;
 
 import com.meliksah.banka.app.gen.dto.JwtToken;
-import com.meliksah.banka.app.gen.util.cache.HazelCastCacheUtil;
+import com.meliksah.banka.app.gen.util.HazelCastCacheUtil;
 import com.meliksah.banka.app.sec.enums.EnumJwtConstant;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
