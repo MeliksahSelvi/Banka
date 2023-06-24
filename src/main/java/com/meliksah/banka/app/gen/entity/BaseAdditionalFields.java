@@ -24,7 +24,7 @@ public class BaseAdditionalFields {
     @LastModifiedDate
     private Date updateDate;
 
-    @Column(name = "CREATED_BY")
+    @Column(name = "CREATED_BY",updatable = false)
     @CreatedBy
     private Long createdBy;
 
